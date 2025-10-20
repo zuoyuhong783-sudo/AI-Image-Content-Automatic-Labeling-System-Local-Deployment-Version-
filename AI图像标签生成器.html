@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 图像内容自动标签生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-area.dragging {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .tag-high { background-color: #2563eb; color: white; }
+        .tag-medium { background-color: #60a5fa; color: white; }
+        .tag-low { background-color: #bfdbfe; color: #1e40af; }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-8 transition-all duration-300">
+        
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <svg class="w-8 h-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800">AI 图像内容自动标签生成器</h1>
+            </div>
+            <p class="text-slate-500 mt-2">上传一张图片，让 AI 告诉您里面有什么！</p>
+        </div>
+
+        <div id="upload-container" class="mb-6">
+            <label for="image-upload" class="cursor-pointer">
+                <div class="upload-area border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-colors">
+                    <div class="flex flex-col items-center text-slate-400">
+                        <svg class="w-16 h-16 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                        <p class="font-medium">点击此处或拖拽图片上传</p>
+                        <p class="text-sm mt-1">支持 JPG, PNG, WEBP 等格式</p>
+                        <p class="text-xs mt-3 text-slate-400">示例：上传包含动物/风景/人物的图片</p>
+                    </div>
+                </div>
+            </label>
+            <input id="image-upload" type="file" accept="image/*">
+        </div>
+
+        <div id="results-container" class="hidden">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-slate-700">图片预览:</h2>
+                        <button id="reupload-btn" class="text-sm text-blue-600 hover:text-blue-800 font-medium">重新上传</button>
+                    </div>
+                    <div class="aspect-video rounded-xl overflow-hidden bg-slate-200">
+                        <img id="image-preview" src="#" alt="用户上传的图片" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-slate-700">AI 分析结果:</h2>
+                        <button id="copy-tags" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                            复制标签
+                        </button>
+                    </div>
+                    
+                    <div id="loader" class="flex flex-col items-center justify-center py-8">
+                        <div class="loader"></div>
+                        <p class="mt-3 text-slate-500 text-sm">AI正在分析图片内容，请稍候...</p>
+                    </div>
+                    
+                    <p id="analysis-time" class="text-xs text-slate-500 mb-3 hidden">分析完成，耗时 <span id="time-value">0</span> 秒</p>
+                    
+                    <div id="tags-container" class="hidden space-y-3">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase">主体 (Subject)</span>
+                            <div id="subject-tags" class="flex flex-wrap gap-2 mt-1"></div>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase">场景 (Scene)</span>
+                            <div id="scene-tags" class="flex flex-wrap gap-2 mt-1"></div>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase">属性 (Attribute)</span>
+                            <div id="attribute-tags" class="flex flex-wrap gap-2 mt-1"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="error-message" class="hidden text-red-600 bg-red-100 p-4 rounded-lg text-sm"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const imageUploadInput = document.getElementById('image-upload');
+        const uploadContainer = document.getElementById('upload-container');
+        const resultsContainer = document.getElementById('results-container');
+        const imagePreview = document.getElementById('image-preview');
+        const loader = document.getElementById('loader');
+        const tagsContainer = document.getElementById('tags-container');
+        const subjectTags = document.getElementById('subject-tags');
+        const sceneTags = document.getElementById('scene-tags');
+        const attributeTags = document.getElementById('attribute-tags');
+        const errorMessage = document.getElementById('error-message');
+        const copyTagsBtn = document.getElementById('copy-tags');
+        const reuploadBtn = document.getElementById('reupload-btn');
+        const analysisTime = document.getElementById('analysis-time');
+        const timeValue = document.getElementById('time-value');
+        const uploadArea = document.querySelector('.upload-area');
+
+        imageUploadInput.addEventListener('change', handleImageUpload);
+        copyTagsBtn.addEventListener('click', copyAllTags);
+        
+        // ---【这里是修正后的代码】---
+        reuploadBtn.addEventListener('click', () => resetUI());
+        
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragging'); });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragging'); });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            if (e.dataTransfer.files.length) {
+                imageUploadInput.files = e.dataTransfer.files;
+                handleImageUpload({ target: imageUploadInput });
+            }
+        });
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请上传图片文件！');
+                return;
+            }
+
+            resetUI(true); // 传入true表示是新的上传
+            resultsContainer.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = (e) => { imagePreview.src = e.target.result; };
+            reader.readAsDataURL(file);
+
+            callAIApi(file);
+        }
+
+        /**
+         * 接入本地 Ollama API 进行分析
+         * @param {File} file
+         */
+         async function callAIApi(file) {
+            const startTime = Date.now();
+            
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                // 请求我们自己的服务器 /api/analyze-image 接口
+                const response = await fetch('/api/analyze-image', {
+                    method: 'POST',
+                    body: formData, // 直接发送打包好的图片
+                });
+
+                if (!response.ok) {
+                    const errorDetail = await response.json();
+                    throw new Error(errorDetail.message || `请求失败，状态码：${response.status}`);
+                }
+
+                const tagsData = await response.json();
+                
+                const endTime = Date.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(1);
+                loader.classList.add('hidden');
+                timeValue.textContent = duration;
+                analysisTime.classList.remove('hidden');
+
+                // 豆包返回的JSON结构比较简单，我们需要适配一下 displayTags 函数
+                const formattedTags = {};
+                for (const key in tagsData) {
+                    formattedTags[key] = tagsData[key].map(tagName => ({ name: tagName, confidence: 0.95 })); // 给一个默认的高置信度
+                }
+                displayTags(formattedTags);
+
+            } catch (error) {
+                console.error("API调用出错:", error);
+                displayError(`分析失败: ${error.message}. 请检查您的服务器和Ollama是否正在运行。`);
+            }
+        }
+
+        function displayTags(tags) {
+            subjectTags.innerHTML = '';
+            sceneTags.innerHTML = '';
+            attributeTags.innerHTML = '';
+            
+            const getTagClass = (confidence) => {
+                if (confidence > 0.9) return 'tag-high';
+                if (confidence > 0.8) return 'tag-medium';
+                return 'tag-low';
+            };
+
+            const createTagElement = (tag) => {
+                const el = document.createElement('span');
+                el.className = `text-sm font-medium px-3 py-1.5 rounded-full ${getTagClass(tag.confidence)}`;
+                el.textContent = tag.name;
+                return el;
+            };
+            
+            (tags.subject || []).forEach(tag => subjectTags.appendChild(createTagElement(tag)));
+            (tags.scene || []).forEach(tag => sceneTags.appendChild(createTagElement(tag)));
+            (tags.attribute || []).forEach(tag => attributeTags.appendChild(createTagElement(tag)));
+            
+            tagsContainer.classList.remove('hidden');
+        }
+
+        function copyAllTags() {
+            const allTags = [];
+            document.querySelectorAll('#tags-container span[class*="rounded-full"]').forEach(el => {
+                allTags.push(el.textContent);
+            });
+            if (allTags.length === 0) return;
+            
+            navigator.clipboard.writeText(allTags.join(', ')).then(() => {
+                const originalText = copyTagsBtn.innerHTML;
+                const icon = copyTagsBtn.querySelector('svg').outerHTML;
+                copyTagsBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>已复制!`;
+                setTimeout(() => { copyTagsBtn.innerHTML = icon + '复制标签'; }, 2000);
+            });
+        }
+
+        function displayError(message) {
+            loader.classList.add('hidden');
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function resetUI(isNewUpload = false) {
+            if (isNewUpload) {
+                uploadContainer.classList.add('hidden');
+            } else {
+                uploadContainer.classList.remove('hidden');
+            }
+            resultsContainer.classList.add('hidden');
+            loader.classList.remove('hidden');
+            tagsContainer.classList.add('hidden');
+            analysisTime.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            errorMessage.textContent = '';
+            imageUploadInput.value = '';
+        }
+        
+        // 辅助函数：将文件对象转换为 Gemini API 需要的格式 (这个函数已不再使用，但保留也无妨)
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+            return {
+                inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+            };
+        }
+
+    </script>
+
+</body>
+</html>
