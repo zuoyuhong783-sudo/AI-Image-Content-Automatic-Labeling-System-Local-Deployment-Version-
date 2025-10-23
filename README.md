@@ -30,19 +30,22 @@
 
 
 
-\[!\[项目演示视频封面](https://i.imgur.com/your\_video\_thumbnail.png)](https://www.youtube.com/watch?v=your\_video\_id)
+<img width="2473" height="1207" alt="image" src="https://github.com/user-attachments/assets/f6cf350f-66a9-4aac-9934-dd40f41cf9db" />
 
 
 
-\*\*\[➡️ 点击此处观看项目演示视频](https://www.youtube.com/watch?v=your\_video\_id)\*\*
+
+[➡️ 点击此处观看项目演示视频]([https://www.youtube.com/watch?v=your\_video\_id](https://www.youtube.com/watch?v=EA3K6iduPG4))
 
 
 
-\*(请将上方图片和链接替换为您录制的视频封面和地址)\*
+
 
 
 
 \## 🖼️ 项目截图
+
+<img width="1376" height="955" alt="image" src="https://github.com/user-attachments/assets/bbc29f1d-d7c9-4185-8aad-84471e263f12" />
 
 
 
@@ -52,21 +55,18 @@
 
 
 
-!\[模型幻觉截图](https://i.imgur.com/hallucination\_screenshot.png)
-
-\*(请替换为米兰大教堂被错误识别为“机器人”的截图)\*
+<img width="1210" height="744" alt="image" src="https://github.com/user-attachments/assets/19dd16d2-6bde-4869-bab0-2a1b6ce4c1b1" />
 
 
 
-\#### 最终效果：通过提示词工程优化后
+\#### 最终效果：通过模型替换优化后
 
-通过对后端代码进行优化，为模型设定了更精确的指令，切换更大容量更聪明的模型，成功抑制了幻觉，实现了准确的标签生成。
+通过对后端代码进行优化，设定了更精确的指令，切换更大容量更聪明的模型，成功抑制了幻觉，实现了准确的标签生成。
 
 
 
-!\[优化后成功截图](https://i.imgur.com/success\_screenshot.png)
+<img width="1391" height="766" alt="image" src="https://github.com/user-attachments/assets/879709c9-58c3-4685-b0ec-3f31e52e15a5" />
 
-\*(请替换为最终成功分析出“大教堂”、“男人”等正确标签的截图)\*
 
 
 
@@ -86,19 +86,17 @@
 
 
 
-| 类别 | 技术 |
 
-| :--- | :--- |
 
-| \*\*前端\*\* | `HTML5`, `CSS3`, `JavaScript (ES6)`, `TailwindCSS` |
+前端： `HTML5`, `CSS3`, `JavaScript (ES6)`, `TailwindCSS` 
 
-| \*\*后端\*\* | `Node.js`, `Express.js` |
+后端： `Node.js`, `Express.js` 
 
-| \*\*AI模型部署\*\*| `Ollama` |
+AI模型部署： `Ollama` 
 
-| \*\*核心模型\*\* | `通义千问-VL (Qwen2.5-VL-Instruct)`, `LLaVA` 等 |
+核心模型： `通义千问-VL (Qwen2.5-VL-Instruct)`, `LLaVA` 等 
 
-| \*\*核心技术\*\* | `本地模型部署`, `全栈开发`, `提示词工程 (Prompt Engineering)` |
+核心技术： `本地模型部署`, `全栈开发`, `提示词工程 (Prompt Engineering)` 
 
 
 
@@ -106,14 +104,7 @@
 
 
 
-本系统采用前后端分离的架构，数据流清晰，各模块职责明确：
-
-
-
-!\[项目架构图](https://i.imgur.com/your\_architecture\_diagram.png)
-
-\*(可选，您可以用简单的绘图工具制作一张流程图替换这里)\*
-
+本系统采用前后端分离的架构，数据流清晰，各模块职责明确
 
 
 \*\*数据流说明:\*\*
