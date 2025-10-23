@@ -35,7 +35,7 @@
 
 
 
-[➡️ 点击此处观看项目演示视频]((https://www.youtube.com/watch?v=EA3K6iduPG4))
+[➡️ 点击此链接观看项目演示视频]https://www.youtube.com/watch?v=EA3K6iduPG4
 
 
 
