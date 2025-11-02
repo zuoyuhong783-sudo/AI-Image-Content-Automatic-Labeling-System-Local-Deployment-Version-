@@ -132,7 +132,6 @@
         imageUploadInput.addEventListener('change', handleImageUpload);
         copyTagsBtn.addEventListener('click', copyAllTags);
         
-        // ---【这里是修正后的代码】---
         reuploadBtn.addEventListener('click', () => resetUI());
         
         uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragging'); });
@@ -150,13 +149,12 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // 验证文件类型
             if (!file.type.startsWith('image/')) {
                 alert('请上传图片文件！');
                 return;
             }
 
-            resetUI(true); // 传入true表示是新的上传
+            resetUI(true); 
             resultsContainer.classList.remove('hidden');
 
             const reader = new FileReader();
@@ -166,10 +164,7 @@
             callAIApi(file);
         }
 
-        /**
-         * 接入本地 Ollama API 进行分析
-         * @param {File} file
-         */
+
          async function callAIApi(file) {
             const startTime = Date.now();
             
@@ -177,10 +172,9 @@
             formData.append('image', file);
 
             try {
-                // 请求我们自己的服务器 /api/analyze-image 接口
                 const response = await fetch('/api/analyze-image', {
                     method: 'POST',
-                    body: formData, // 直接发送打包好的图片
+                    body: formData, 
                 });
 
                 if (!response.ok) {
@@ -196,10 +190,9 @@
                 timeValue.textContent = duration;
                 analysisTime.classList.remove('hidden');
 
-                // 豆包返回的JSON结构比较简单，我们需要适配一下 displayTags 函数
                 const formattedTags = {};
                 for (const key in tagsData) {
-                    formattedTags[key] = tagsData[key].map(tagName => ({ name: tagName, confidence: 0.95 })); // 给一个默认的高置信度
+                    formattedTags[key] = tagsData[key].map(tagName => ({ name: tagName, confidence: 0.95 })); 
                 }
                 displayTags(formattedTags);
 
@@ -270,18 +263,6 @@
             imageUploadInput.value = '';
         }
         
-        // 辅助函数：将文件对象转换为 Gemini API 需要的格式 (这个函数已不再使用，但保留也无妨)
-        async function fileToGenerativePart(file) {
-            const base64EncodedDataPromise = new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result.split(',')[1]);
-                reader.readAsDataURL(file);
-            });
-            return {
-                inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
-            };
-        }
-
     </script>
 
 </body>
